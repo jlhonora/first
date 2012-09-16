@@ -38,7 +38,7 @@ AcqStructs = struct('TE', [], 'Mag', [], 'Real', [], 'Imag', [], 'KSpace', [], '
 AcqStructs = repmat(AcqStructs,n_req,1);
 
 [TE, mag_name, re_name, im_name, raw_name] = ...
-    textread([direc '\info'],'%f %s %s %s %s','headerlines',1);
+    textread([direc '/info'],'%f %s %s %s %s','headerlines',1);
 
 InfoStruct.TE = TE.*1e-3;
 InfoStruct.Mag = mag_name;
@@ -88,7 +88,7 @@ for ii = 1:n_req
     AcqStructs(ii).KTraj = struct('kx', kx, 'ky', ky, 'kf', kf);    
     %Raw
     if(~DicomOnly)
-        filename = [direc '\' char(InfoStruct.KSpace(index))];
+        filename = [direc '/' char(InfoStruct.KSpace(index))];
         [kspace, petable, frx, noi] = raw_READ(filename,'NoConsoleOutput');
         %[raw_info] = raw_read_info(filename, petable);
         kspacep = mean(kspace,3);
