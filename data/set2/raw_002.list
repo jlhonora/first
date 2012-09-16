@@ -1,0 +1,660 @@
+# === DATA DESCRIPTION FILE ======================================================
+#
+# CAUTION - Investigational device.
+# Limited by Federal Law to investigational use.
+#
+# Scan name   : REC T1W_FFE
+# Dataset name: RAW_002
+#
+# Gyroscan SW release            : 11.1-4
+# Reconstruction Host SW Version :  98
+# Reconstruction   AP SW Version : 117
+#
+# === GENERAL INFORMATION ========================================================
+#
+# n.a. n.a. n.a.  number of ...                        value
+# ---- ---- ----  ----------------------------------   -----
+.    0    0    0  number_of_mixes                    :     1
+#
+# mix  n.a. n.a.  number of ...                        value
+# ---- ---- ----  ----------------------------------   -----
+.    0    0    0  number_of_encoding_dimensions      :     2
+.    0    0    0  number_of_dynamic_scans            :     1
+.    0    0    0  number_of_cardiac_phases           :     1
+.    0    0    0  number_of_echoes                   :     1
+.    0    0    0  number_of_locations                :     1
+.    0    0    0  number_of_extra_attribute_1_values :     1
+.    0    0    0  number_of_extra_attribute_2_values :     1
+.    0    0    0  number_of_signal_averages          :     4
+#
+# mix  echo n.a.  k-space coordinate ranges            start  end
+# ---- ---- ----  ----------------------------------   -----  -----
+.    0    0    0  kx_range                           :  -128    127
+.    0    0    0  ky_range                           :   -64     63
+#
+# mix  echo n.a.  k-space oversample factors           value
+# ---- ---- ----  ----------------------------------   ---------
+.    0    0    0  kx_oversample_factor               :    2.0000
+.    0    0    0  ky_oversample_factor               :    1.0000
+#
+# mix  n.a. n.a.  reconstruction matrix                value
+# ---- ---- ----  ----------------------------------   -----
+.    0    0    0  X-resolution                       :   128
+.    0    0    0  Y-resolution                       :   128
+#
+# mix  echo loca  imaging space coordinate ranges      start  end
+# ---- ---- ----  ----------------------------------   -----  -----
+.    0    0    0  X_range                            :   -64     63
+.    0    0    0  Y_range                            :  -128     -1
+#
+# Complex data vector types:
+# --------------------------
+# STD = Standard data vector (image data or spectroscopy data)
+# REJ = Rejected standard data vector
+#       (only for scans with arrhythmia rejection)
+# PHX = Correction data vector for EPI/GraSE phase correction
+# FRX = Correction data vector for frequency spectrum correction
+# NOI = Preparation phase data vector for noise determination
+# NAV = Phase navigator data vector
+#
+# Other attributes of complex data vectors:
+# -----------------------------------------
+# mix    = mixed sequence number
+# dyn    = dynamic scan number
+# card   = cardiac phase number
+# echo   = echo number
+# loca   = location number
+# chan   = synco channel number
+# extr1  = extra attribute 1 (semantics depend on type of scan)
+# extr2  = extra attribute 2 (   ''       ''   ''  ''  ''  '' )
+# kx,ky  = k-space coordinates in 1st and 2nd preparation direction (spectroscopy data)
+# ky,kz  = k-space coordinates in 1st and 2nd preparation direction (image data)
+# aver   = sequence number of this signal average
+# sign   = sign of measurement gradient used for this data vector (1 = positive, -1 = negative)
+# rf     = sequence number of this rf echo (only for TSE, TFE, GraSE)
+# grad   = sequence number of this gradient echo (only for EPI/GraSE)
+# enc    = encoding time (only for EPI/GraSE)
+# rtop   = R-top offset in ms
+# rr     = RR-interval length in ms
+# size   = data vector size   in number of bytes (1 complex element = 2 floats = 8 bytes)
+# offset = data vector offset in number of bytes (first data vector starts at offset 0)
+#
+# The complex data vectors are represented as binary data in little endian single precision IEEE float format.
+#
+# Please note that complex data vector attributes which are not relevant for a certain type of vector
+# may have arbitrary values!
+#
+# Fourier transformations:
+# ------------------------
+# The Fourier transformation lengths for STD, NAV and REJ data are (by definition) equal to
+# to reconstruction matrix length * k-space oversample sample factor
+# in each applicable direction.
+#
+# The centre point of the k-space must be positioned in the middle of the interval with this length,
+# (or just right from the middle if the Fourier transformation length is even), according to the
+# specified k-space coordinate ranges. Apply a cyclic wrap-around to data that extends outside the
+# interval, and zerofill missing data before Fourier transformation.
+# After Fourier transformation, the imaging space coordinate ranges specify the position, length 
+# and direction of the relevant part of the frequency spectrum. Apply a cyclic wrap-around if
+# needed. If start value > end value, read the spectrum part between these positions in reverse order.
+#
+# Corrections:
+# ------------
+# Depending on the type of scan, one or more of the following corrections may have to be applied:
+# - frequency spectrum correction (using FRX data)
+# - EPI/GraSE phase correction    (using PHX data)
+# - rf echo amplitude correction  (using PHX data, only for GraSE scans)
+# 
+# These corrections can be applied to STD, NAV and REJ data vectors after forward Fourier transformation
+# in the measurement direction, by multiplying the selected part of the frequency spectrum of
+# these data vectors with the PHX and FRX correction data vector that has corresponding identifying
+# complex data vector attributes.
+# 
+# Remarks:
+# - In GraSE scans you may get a PHX correction data vector for each rf echo. These correction vectors
+#   differ only a scale factor from each other, and can be used for rf echo amplitude correction.
+#   If you don't want this correction, use the correction data vectors with rf echo = 0 only.
+# - Depending on the type of scan, several of the FRX correction data vectors may be identical.
+#
+# Identifying attributes of complex data vectors:
+# -----------------------------------------------
+# The next table specifies the identifying attributes for each type of complex data vector:
+#
+# typ mix   dyn   card  echo  loca  chan  extr1 extr2 ky    kz    aver  sign  rf    grad  enc   rtop  rr    size   offset
+# --- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ------ ------
+#
+# STD   *     *     *     *     *     *     *     *     *     *     *     *     *     *
+# REJ   *     *     *     *     *     *     *     *     *     *     *     *     *     *
+# PHX   *                 *     *     *                                   *     *     *
+# FRX   *                 *     *     *                                   *            
+# NOI                           *     *                                                
+# NAV   *     *     *     *     *     *     *     *     *     *     *     *     *     *
+#
+# === START OF DATA VECTOR INDEX =================================================
+#
+# typ mix   dyn   card  echo  loca  chan  extr1 extr2 ky    kz    aver  sign  rf    grad  enc   rtop  rr    size   offset
+# --- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ------ ------
+#
+  NOI     0     0     0     0     0     0     0     0     0     0     0     1     0     0     0     0     0 159744 0
+  FRX     0     0     0     0     0     0     0     0     0     0     0     1     0     0     0     0     0   1024 159744
+  STD     0     0     0     0     0     0     0     0    63     0     0     1     0     0     0     0     0   2048 160768
+  STD     0     0     0     0     0     0     0     0    63     0     1     1     0     0     0     0     0   2048 162816
+  STD     0     0     0     0     0     0     0     0    63     0     2     1     0     0     0     0     0   2048 164864
+  STD     0     0     0     0     0     0     0     0    63     0     3     1     0     0     0     0     0   2048 166912
+  STD     0     0     0     0     0     0     0     0    62     0     0     1     0     0     0     0     0   2048 168960
+  STD     0     0     0     0     0     0     0     0    62     0     1     1     0     0     0     0     0   2048 171008
+  STD     0     0     0     0     0     0     0     0    62     0     2     1     0     0     0     0     0   2048 173056
+  STD     0     0     0     0     0     0     0     0    62     0     3     1     0     0     0     0     0   2048 175104
+  STD     0     0     0     0     0     0     0     0    61     0     0     1     0     0     0     0     0   2048 177152
+  STD     0     0     0     0     0     0     0     0    61     0     1     1     0     0     0     0     0   2048 179200
+  STD     0     0     0     0     0     0     0     0    61     0     2     1     0     0     0     0     0   2048 181248
+  STD     0     0     0     0     0     0     0     0    61     0     3     1     0     0     0     0     0   2048 183296
+  STD     0     0     0     0     0     0     0     0    60     0     0     1     0     0     0     0     0   2048 185344
+  STD     0     0     0     0     0     0     0     0    60     0     1     1     0     0     0     0     0   2048 187392
+  STD     0     0     0     0     0     0     0     0    60     0     2     1     0     0     0     0     0   2048 189440
+  STD     0     0     0     0     0     0     0     0    60     0     3     1     0     0     0     0     0   2048 191488
+  STD     0     0     0     0     0     0     0     0    59     0     0     1     0     0     0     0     0   2048 193536
+  STD     0     0     0     0     0     0     0     0    59     0     1     1     0     0     0     0     0   2048 195584
+  STD     0     0     0     0     0     0     0     0    59     0     2     1     0     0     0     0     0   2048 197632
+  STD     0     0     0     0     0     0     0     0    59     0     3     1     0     0     0     0     0   2048 199680
+  STD     0     0     0     0     0     0     0     0    58     0     0     1     0     0     0     0     0   2048 201728
+  STD     0     0     0     0     0     0     0     0    58     0     1     1     0     0     0     0     0   2048 203776
+  STD     0     0     0     0     0     0     0     0    58     0     2     1     0     0     0     0     0   2048 205824
+  STD     0     0     0     0     0     0     0     0    58     0     3     1     0     0     0     0     0   2048 207872
+  STD     0     0     0     0     0     0     0     0    57     0     0     1     0     0     0     0     0   2048 209920
+  STD     0     0     0     0     0     0     0     0    57     0     1     1     0     0     0     0     0   2048 211968
+  STD     0     0     0     0     0     0     0     0    57     0     2     1     0     0     0     0     0   2048 214016
+  STD     0     0     0     0     0     0     0     0    57     0     3     1     0     0     0     0     0   2048 216064
+  STD     0     0     0     0     0     0     0     0    56     0     0     1     0     0     0     0     0   2048 218112
+  STD     0     0     0     0     0     0     0     0    56     0     1     1     0     0     0     0     0   2048 220160
+  STD     0     0     0     0     0     0     0     0    56     0     2     1     0     0     0     0     0   2048 222208
+  STD     0     0     0     0     0     0     0     0    56     0     3     1     0     0     0     0     0   2048 224256
+  STD     0     0     0     0     0     0     0     0    55     0     0     1     0     0     0     0     0   2048 226304
+  STD     0     0     0     0     0     0     0     0    55     0     1     1     0     0     0     0     0   2048 228352
+  STD     0     0     0     0     0     0     0     0    55     0     2     1     0     0     0     0     0   2048 230400
+  STD     0     0     0     0     0     0     0     0    55     0     3     1     0     0     0     0     0   2048 232448
+  STD     0     0     0     0     0     0     0     0    54     0     0     1     0     0     0     0     0   2048 234496
+  STD     0     0     0     0     0     0     0     0    54     0     1     1     0     0     0     0     0   2048 236544
+  STD     0     0     0     0     0     0     0     0    54     0     2     1     0     0     0     0     0   2048 238592
+  STD     0     0     0     0     0     0     0     0    54     0     3     1     0     0     0     0     0   2048 240640
+  STD     0     0     0     0     0     0     0     0    53     0     0     1     0     0     0     0     0   2048 242688
+  STD     0     0     0     0     0     0     0     0    53     0     1     1     0     0     0     0     0   2048 244736
+  STD     0     0     0     0     0     0     0     0    53     0     2     1     0     0     0     0     0   2048 246784
+  STD     0     0     0     0     0     0     0     0    53     0     3     1     0     0     0     0     0   2048 248832
+  STD     0     0     0     0     0     0     0     0    52     0     0     1     0     0     0     0     0   2048 250880
+  STD     0     0     0     0     0     0     0     0    52     0     1     1     0     0     0     0     0   2048 252928
+  STD     0     0     0     0     0     0     0     0    52     0     2     1     0     0     0     0     0   2048 254976
+  STD     0     0     0     0     0     0     0     0    52     0     3     1     0     0     0     0     0   2048 257024
+  STD     0     0     0     0     0     0     0     0    51     0     0     1     0     0     0     0     0   2048 259072
+  STD     0     0     0     0     0     0     0     0    51     0     1     1     0     0     0     0     0   2048 261120
+  STD     0     0     0     0     0     0     0     0    51     0     2     1     0     0     0     0     0   2048 263168
+  STD     0     0     0     0     0     0     0     0    51     0     3     1     0     0     0     0     0   2048 265216
+  STD     0     0     0     0     0     0     0     0    50     0     0     1     0     0     0     0     0   2048 267264
+  STD     0     0     0     0     0     0     0     0    50     0     1     1     0     0     0     0     0   2048 269312
+  STD     0     0     0     0     0     0     0     0    50     0     2     1     0     0     0     0     0   2048 271360
+  STD     0     0     0     0     0     0     0     0    50     0     3     1     0     0     0     0     0   2048 273408
+  STD     0     0     0     0     0     0     0     0    49     0     0     1     0     0     0     0     0   2048 275456
+  STD     0     0     0     0     0     0     0     0    49     0     1     1     0     0     0     0     0   2048 277504
+  STD     0     0     0     0     0     0     0     0    49     0     2     1     0     0     0     0     0   2048 279552
+  STD     0     0     0     0     0     0     0     0    49     0     3     1     0     0     0     0     0   2048 281600
+  STD     0     0     0     0     0     0     0     0    48     0     0     1     0     0     0     0     0   2048 283648
+  STD     0     0     0     0     0     0     0     0    48     0     1     1     0     0     0     0     0   2048 285696
+  STD     0     0     0     0     0     0     0     0    48     0     2     1     0     0     0     0     0   2048 287744
+  STD     0     0     0     0     0     0     0     0    48     0     3     1     0     0     0     0     0   2048 289792
+  STD     0     0     0     0     0     0     0     0    47     0     0     1     0     0     0     0     0   2048 291840
+  STD     0     0     0     0     0     0     0     0    47     0     1     1     0     0     0     0     0   2048 293888
+  STD     0     0     0     0     0     0     0     0    47     0     2     1     0     0     0     0     0   2048 295936
+  STD     0     0     0     0     0     0     0     0    47     0     3     1     0     0     0     0     0   2048 297984
+  STD     0     0     0     0     0     0     0     0    46     0     0     1     0     0     0     0     0   2048 300032
+  STD     0     0     0     0     0     0     0     0    46     0     1     1     0     0     0     0     0   2048 302080
+  STD     0     0     0     0     0     0     0     0    46     0     2     1     0     0     0     0     0   2048 304128
+  STD     0     0     0     0     0     0     0     0    46     0     3     1     0     0     0     0     0   2048 306176
+  STD     0     0     0     0     0     0     0     0    45     0     0     1     0     0     0     0     0   2048 308224
+  STD     0     0     0     0     0     0     0     0    45     0     1     1     0     0     0     0     0   2048 310272
+  STD     0     0     0     0     0     0     0     0    45     0     2     1     0     0     0     0     0   2048 312320
+  STD     0     0     0     0     0     0     0     0    45     0     3     1     0     0     0     0     0   2048 314368
+  STD     0     0     0     0     0     0     0     0    44     0     0     1     0     0     0     0     0   2048 316416
+  STD     0     0     0     0     0     0     0     0    44     0     1     1     0     0     0     0     0   2048 318464
+  STD     0     0     0     0     0     0     0     0    44     0     2     1     0     0     0     0     0   2048 320512
+  STD     0     0     0     0     0     0     0     0    44     0     3     1     0     0     0     0     0   2048 322560
+  STD     0     0     0     0     0     0     0     0    43     0     0     1     0     0     0     0     0   2048 324608
+  STD     0     0     0     0     0     0     0     0    43     0     1     1     0     0     0     0     0   2048 326656
+  STD     0     0     0     0     0     0     0     0    43     0     2     1     0     0     0     0     0   2048 328704
+  STD     0     0     0     0     0     0     0     0    43     0     3     1     0     0     0     0     0   2048 330752
+  STD     0     0     0     0     0     0     0     0    42     0     0     1     0     0     0     0     0   2048 332800
+  STD     0     0     0     0     0     0     0     0    42     0     1     1     0     0     0     0     0   2048 334848
+  STD     0     0     0     0     0     0     0     0    42     0     2     1     0     0     0     0     0   2048 336896
+  STD     0     0     0     0     0     0     0     0    42     0     3     1     0     0     0     0     0   2048 338944
+  STD     0     0     0     0     0     0     0     0    41     0     0     1     0     0     0     0     0   2048 340992
+  STD     0     0     0     0     0     0     0     0    41     0     1     1     0     0     0     0     0   2048 343040
+  STD     0     0     0     0     0     0     0     0    41     0     2     1     0     0     0     0     0   2048 345088
+  STD     0     0     0     0     0     0     0     0    41     0     3     1     0     0     0     0     0   2048 347136
+  STD     0     0     0     0     0     0     0     0    40     0     0     1     0     0     0     0     0   2048 349184
+  STD     0     0     0     0     0     0     0     0    40     0     1     1     0     0     0     0     0   2048 351232
+  STD     0     0     0     0     0     0     0     0    40     0     2     1     0     0     0     0     0   2048 353280
+  STD     0     0     0     0     0     0     0     0    40     0     3     1     0     0     0     0     0   2048 355328
+  STD     0     0     0     0     0     0     0     0    39     0     0     1     0     0     0     0     0   2048 357376
+  STD     0     0     0     0     0     0     0     0    39     0     1     1     0     0     0     0     0   2048 359424
+  STD     0     0     0     0     0     0     0     0    39     0     2     1     0     0     0     0     0   2048 361472
+  STD     0     0     0     0     0     0     0     0    39     0     3     1     0     0     0     0     0   2048 363520
+  STD     0     0     0     0     0     0     0     0    38     0     0     1     0     0     0     0     0   2048 365568
+  STD     0     0     0     0     0     0     0     0    38     0     1     1     0     0     0     0     0   2048 367616
+  STD     0     0     0     0     0     0     0     0    38     0     2     1     0     0     0     0     0   2048 369664
+  STD     0     0     0     0     0     0     0     0    38     0     3     1     0     0     0     0     0   2048 371712
+  STD     0     0     0     0     0     0     0     0    37     0     0     1     0     0     0     0     0   2048 373760
+  STD     0     0     0     0     0     0     0     0    37     0     1     1     0     0     0     0     0   2048 375808
+  STD     0     0     0     0     0     0     0     0    37     0     2     1     0     0     0     0     0   2048 377856
+  STD     0     0     0     0     0     0     0     0    37     0     3     1     0     0     0     0     0   2048 379904
+  STD     0     0     0     0     0     0     0     0    36     0     0     1     0     0     0     0     0   2048 381952
+  STD     0     0     0     0     0     0     0     0    36     0     1     1     0     0     0     0     0   2048 384000
+  STD     0     0     0     0     0     0     0     0    36     0     2     1     0     0     0     0     0   2048 386048
+  STD     0     0     0     0     0     0     0     0    36     0     3     1     0     0     0     0     0   2048 388096
+  STD     0     0     0     0     0     0     0     0    35     0     0     1     0     0     0     0     0   2048 390144
+  STD     0     0     0     0     0     0     0     0    35     0     1     1     0     0     0     0     0   2048 392192
+  STD     0     0     0     0     0     0     0     0    35     0     2     1     0     0     0     0     0   2048 394240
+  STD     0     0     0     0     0     0     0     0    35     0     3     1     0     0     0     0     0   2048 396288
+  STD     0     0     0     0     0     0     0     0    34     0     0     1     0     0     0     0     0   2048 398336
+  STD     0     0     0     0     0     0     0     0    34     0     1     1     0     0     0     0     0   2048 400384
+  STD     0     0     0     0     0     0     0     0    34     0     2     1     0     0     0     0     0   2048 402432
+  STD     0     0     0     0     0     0     0     0    34     0     3     1     0     0     0     0     0   2048 404480
+  STD     0     0     0     0     0     0     0     0    33     0     0     1     0     0     0     0     0   2048 406528
+  STD     0     0     0     0     0     0     0     0    33     0     1     1     0     0     0     0     0   2048 408576
+  STD     0     0     0     0     0     0     0     0    33     0     2     1     0     0     0     0     0   2048 410624
+  STD     0     0     0     0     0     0     0     0    33     0     3     1     0     0     0     0     0   2048 412672
+  STD     0     0     0     0     0     0     0     0    32     0     0     1     0     0     0     0     0   2048 414720
+  STD     0     0     0     0     0     0     0     0    32     0     1     1     0     0     0     0     0   2048 416768
+  STD     0     0     0     0     0     0     0     0    32     0     2     1     0     0     0     0     0   2048 418816
+  STD     0     0     0     0     0     0     0     0    32     0     3     1     0     0     0     0     0   2048 420864
+  STD     0     0     0     0     0     0     0     0    31     0     0     1     0     0     0     0     0   2048 422912
+  STD     0     0     0     0     0     0     0     0    31     0     1     1     0     0     0     0     0   2048 424960
+  STD     0     0     0     0     0     0     0     0    31     0     2     1     0     0     0     0     0   2048 427008
+  STD     0     0     0     0     0     0     0     0    31     0     3     1     0     0     0     0     0   2048 429056
+  STD     0     0     0     0     0     0     0     0    30     0     0     1     0     0     0     0     0   2048 431104
+  STD     0     0     0     0     0     0     0     0    30     0     1     1     0     0     0     0     0   2048 433152
+  STD     0     0     0     0     0     0     0     0    30     0     2     1     0     0     0     0     0   2048 435200
+  STD     0     0     0     0     0     0     0     0    30     0     3     1     0     0     0     0     0   2048 437248
+  STD     0     0     0     0     0     0     0     0    29     0     0     1     0     0     0     0     0   2048 439296
+  STD     0     0     0     0     0     0     0     0    29     0     1     1     0     0     0     0     0   2048 441344
+  STD     0     0     0     0     0     0     0     0    29     0     2     1     0     0     0     0     0   2048 443392
+  STD     0     0     0     0     0     0     0     0    29     0     3     1     0     0     0     0     0   2048 445440
+  STD     0     0     0     0     0     0     0     0    28     0     0     1     0     0     0     0     0   2048 447488
+  STD     0     0     0     0     0     0     0     0    28     0     1     1     0     0     0     0     0   2048 449536
+  STD     0     0     0     0     0     0     0     0    28     0     2     1     0     0     0     0     0   2048 451584
+  STD     0     0     0     0     0     0     0     0    28     0     3     1     0     0     0     0     0   2048 453632
+  STD     0     0     0     0     0     0     0     0    27     0     0     1     0     0     0     0     0   2048 455680
+  STD     0     0     0     0     0     0     0     0    27     0     1     1     0     0     0     0     0   2048 457728
+  STD     0     0     0     0     0     0     0     0    27     0     2     1     0     0     0     0     0   2048 459776
+  STD     0     0     0     0     0     0     0     0    27     0     3     1     0     0     0     0     0   2048 461824
+  STD     0     0     0     0     0     0     0     0    26     0     0     1     0     0     0     0     0   2048 463872
+  STD     0     0     0     0     0     0     0     0    26     0     1     1     0     0     0     0     0   2048 465920
+  STD     0     0     0     0     0     0     0     0    26     0     2     1     0     0     0     0     0   2048 467968
+  STD     0     0     0     0     0     0     0     0    26     0     3     1     0     0     0     0     0   2048 470016
+  STD     0     0     0     0     0     0     0     0    25     0     0     1     0     0     0     0     0   2048 472064
+  STD     0     0     0     0     0     0     0     0    25     0     1     1     0     0     0     0     0   2048 474112
+  STD     0     0     0     0     0     0     0     0    25     0     2     1     0     0     0     0     0   2048 476160
+  STD     0     0     0     0     0     0     0     0    25     0     3     1     0     0     0     0     0   2048 478208
+  STD     0     0     0     0     0     0     0     0    24     0     0     1     0     0     0     0     0   2048 480256
+  STD     0     0     0     0     0     0     0     0    24     0     1     1     0     0     0     0     0   2048 482304
+  STD     0     0     0     0     0     0     0     0    24     0     2     1     0     0     0     0     0   2048 484352
+  STD     0     0     0     0     0     0     0     0    24     0     3     1     0     0     0     0     0   2048 486400
+  STD     0     0     0     0     0     0     0     0    23     0     0     1     0     0     0     0     0   2048 488448
+  STD     0     0     0     0     0     0     0     0    23     0     1     1     0     0     0     0     0   2048 490496
+  STD     0     0     0     0     0     0     0     0    23     0     2     1     0     0     0     0     0   2048 492544
+  STD     0     0     0     0     0     0     0     0    23     0     3     1     0     0     0     0     0   2048 494592
+  STD     0     0     0     0     0     0     0     0    22     0     0     1     0     0     0     0     0   2048 496640
+  STD     0     0     0     0     0     0     0     0    22     0     1     1     0     0     0     0     0   2048 498688
+  STD     0     0     0     0     0     0     0     0    22     0     2     1     0     0     0     0     0   2048 500736
+  STD     0     0     0     0     0     0     0     0    22     0     3     1     0     0     0     0     0   2048 502784
+  STD     0     0     0     0     0     0     0     0    21     0     0     1     0     0     0     0     0   2048 504832
+  STD     0     0     0     0     0     0     0     0    21     0     1     1     0     0     0     0     0   2048 506880
+  STD     0     0     0     0     0     0     0     0    21     0     2     1     0     0     0     0     0   2048 508928
+  STD     0     0     0     0     0     0     0     0    21     0     3     1     0     0     0     0     0   2048 510976
+  STD     0     0     0     0     0     0     0     0    20     0     0     1     0     0     0     0     0   2048 513024
+  STD     0     0     0     0     0     0     0     0    20     0     1     1     0     0     0     0     0   2048 515072
+  STD     0     0     0     0     0     0     0     0    20     0     2     1     0     0     0     0     0   2048 517120
+  STD     0     0     0     0     0     0     0     0    20     0     3     1     0     0     0     0     0   2048 519168
+  STD     0     0     0     0     0     0     0     0    19     0     0     1     0     0     0     0     0   2048 521216
+  STD     0     0     0     0     0     0     0     0    19     0     1     1     0     0     0     0     0   2048 523264
+  STD     0     0     0     0     0     0     0     0    19     0     2     1     0     0     0     0     0   2048 525312
+  STD     0     0     0     0     0     0     0     0    19     0     3     1     0     0     0     0     0   2048 527360
+  STD     0     0     0     0     0     0     0     0    18     0     0     1     0     0     0     0     0   2048 529408
+  STD     0     0     0     0     0     0     0     0    18     0     1     1     0     0     0     0     0   2048 531456
+  STD     0     0     0     0     0     0     0     0    18     0     2     1     0     0     0     0     0   2048 533504
+  STD     0     0     0     0     0     0     0     0    18     0     3     1     0     0     0     0     0   2048 535552
+  STD     0     0     0     0     0     0     0     0    17     0     0     1     0     0     0     0     0   2048 537600
+  STD     0     0     0     0     0     0     0     0    17     0     1     1     0     0     0     0     0   2048 539648
+  STD     0     0     0     0     0     0     0     0    17     0     2     1     0     0     0     0     0   2048 541696
+  STD     0     0     0     0     0     0     0     0    17     0     3     1     0     0     0     0     0   2048 543744
+  STD     0     0     0     0     0     0     0     0    16     0     0     1     0     0     0     0     0   2048 545792
+  STD     0     0     0     0     0     0     0     0    16     0     1     1     0     0     0     0     0   2048 547840
+  STD     0     0     0     0     0     0     0     0    16     0     2     1     0     0     0     0     0   2048 549888
+  STD     0     0     0     0     0     0     0     0    16     0     3     1     0     0     0     0     0   2048 551936
+  STD     0     0     0     0     0     0     0     0    15     0     0     1     0     0     0     0     0   2048 553984
+  STD     0     0     0     0     0     0     0     0    15     0     1     1     0     0     0     0     0   2048 556032
+  STD     0     0     0     0     0     0     0     0    15     0     2     1     0     0     0     0     0   2048 558080
+  STD     0     0     0     0     0     0     0     0    15     0     3     1     0     0     0     0     0   2048 560128
+  STD     0     0     0     0     0     0     0     0    14     0     0     1     0     0     0     0     0   2048 562176
+  STD     0     0     0     0     0     0     0     0    14     0     1     1     0     0     0     0     0   2048 564224
+  STD     0     0     0     0     0     0     0     0    14     0     2     1     0     0     0     0     0   2048 566272
+  STD     0     0     0     0     0     0     0     0    14     0     3     1     0     0     0     0     0   2048 568320
+  STD     0     0     0     0     0     0     0     0    13     0     0     1     0     0     0     0     0   2048 570368
+  STD     0     0     0     0     0     0     0     0    13     0     1     1     0     0     0     0     0   2048 572416
+  STD     0     0     0     0     0     0     0     0    13     0     2     1     0     0     0     0     0   2048 574464
+  STD     0     0     0     0     0     0     0     0    13     0     3     1     0     0     0     0     0   2048 576512
+  STD     0     0     0     0     0     0     0     0    12     0     0     1     0     0     0     0     0   2048 578560
+  STD     0     0     0     0     0     0     0     0    12     0     1     1     0     0     0     0     0   2048 580608
+  STD     0     0     0     0     0     0     0     0    12     0     2     1     0     0     0     0     0   2048 582656
+  STD     0     0     0     0     0     0     0     0    12     0     3     1     0     0     0     0     0   2048 584704
+  STD     0     0     0     0     0     0     0     0    11     0     0     1     0     0     0     0     0   2048 586752
+  STD     0     0     0     0     0     0     0     0    11     0     1     1     0     0     0     0     0   2048 588800
+  STD     0     0     0     0     0     0     0     0    11     0     2     1     0     0     0     0     0   2048 590848
+  STD     0     0     0     0     0     0     0     0    11     0     3     1     0     0     0     0     0   2048 592896
+  STD     0     0     0     0     0     0     0     0    10     0     0     1     0     0     0     0     0   2048 594944
+  STD     0     0     0     0     0     0     0     0    10     0     1     1     0     0     0     0     0   2048 596992
+  STD     0     0     0     0     0     0     0     0    10     0     2     1     0     0     0     0     0   2048 599040
+  STD     0     0     0     0     0     0     0     0    10     0     3     1     0     0     0     0     0   2048 601088
+  STD     0     0     0     0     0     0     0     0     9     0     0     1     0     0     0     0     0   2048 603136
+  STD     0     0     0     0     0     0     0     0     9     0     1     1     0     0     0     0     0   2048 605184
+  STD     0     0     0     0     0     0     0     0     9     0     2     1     0     0     0     0     0   2048 607232
+  STD     0     0     0     0     0     0     0     0     9     0     3     1     0     0     0     0     0   2048 609280
+  STD     0     0     0     0     0     0     0     0     8     0     0     1     0     0     0     0     0   2048 611328
+  STD     0     0     0     0     0     0     0     0     8     0     1     1     0     0     0     0     0   2048 613376
+  STD     0     0     0     0     0     0     0     0     8     0     2     1     0     0     0     0     0   2048 615424
+  STD     0     0     0     0     0     0     0     0     8     0     3     1     0     0     0     0     0   2048 617472
+  STD     0     0     0     0     0     0     0     0     7     0     0     1     0     0     0     0     0   2048 619520
+  STD     0     0     0     0     0     0     0     0     7     0     1     1     0     0     0     0     0   2048 621568
+  STD     0     0     0     0     0     0     0     0     7     0     2     1     0     0     0     0     0   2048 623616
+  STD     0     0     0     0     0     0     0     0     7     0     3     1     0     0     0     0     0   2048 625664
+  STD     0     0     0     0     0     0     0     0     6     0     0     1     0     0     0     0     0   2048 627712
+  STD     0     0     0     0     0     0     0     0     6     0     1     1     0     0     0     0     0   2048 629760
+  STD     0     0     0     0     0     0     0     0     6     0     2     1     0     0     0     0     0   2048 631808
+  STD     0     0     0     0     0     0     0     0     6     0     3     1     0     0     0     0     0   2048 633856
+  STD     0     0     0     0     0     0     0     0     5     0     0     1     0     0     0     0     0   2048 635904
+  STD     0     0     0     0     0     0     0     0     5     0     1     1     0     0     0     0     0   2048 637952
+  STD     0     0     0     0     0     0     0     0     5     0     2     1     0     0     0     0     0   2048 640000
+  STD     0     0     0     0     0     0     0     0     5     0     3     1     0     0     0     0     0   2048 642048
+  STD     0     0     0     0     0     0     0     0     4     0     0     1     0     0     0     0     0   2048 644096
+  STD     0     0     0     0     0     0     0     0     4     0     1     1     0     0     0     0     0   2048 646144
+  STD     0     0     0     0     0     0     0     0     4     0     2     1     0     0     0     0     0   2048 648192
+  STD     0     0     0     0     0     0     0     0     4     0     3     1     0     0     0     0     0   2048 650240
+  STD     0     0     0     0     0     0     0     0     3     0     0     1     0     0     0     0     0   2048 652288
+  STD     0     0     0     0     0     0     0     0     3     0     1     1     0     0     0     0     0   2048 654336
+  STD     0     0     0     0     0     0     0     0     3     0     2     1     0     0     0     0     0   2048 656384
+  STD     0     0     0     0     0     0     0     0     3     0     3     1     0     0     0     0     0   2048 658432
+  STD     0     0     0     0     0     0     0     0     2     0     0     1     0     0     0     0     0   2048 660480
+  STD     0     0     0     0     0     0     0     0     2     0     1     1     0     0     0     0     0   2048 662528
+  STD     0     0     0     0     0     0     0     0     2     0     2     1     0     0     0     0     0   2048 664576
+  STD     0     0     0     0     0     0     0     0     2     0     3     1     0     0     0     0     0   2048 666624
+  STD     0     0     0     0     0     0     0     0     1     0     0     1     0     0     0     0     0   2048 668672
+  STD     0     0     0     0     0     0     0     0     1     0     1     1     0     0     0     0     0   2048 670720
+  STD     0     0     0     0     0     0     0     0     1     0     2     1     0     0     0     0     0   2048 672768
+  STD     0     0     0     0     0     0     0     0     1     0     3     1     0     0     0     0     0   2048 674816
+  STD     0     0     0     0     0     0     0     0     0     0     0     1     0     0     0     0     0   2048 676864
+  STD     0     0     0     0     0     0     0     0     0     0     1     1     0     0     0     0     0   2048 678912
+  STD     0     0     0     0     0     0     0     0     0     0     2     1     0     0     0     0     0   2048 680960
+  STD     0     0     0     0     0     0     0     0     0     0     3     1     0     0     0     0     0   2048 683008
+  STD     0     0     0     0     0     0     0     0    -1     0     0     1     0     0     0     0     0   2048 685056
+  STD     0     0     0     0     0     0     0     0    -1     0     1     1     0     0     0     0     0   2048 687104
+  STD     0     0     0     0     0     0     0     0    -1     0     2     1     0     0     0     0     0   2048 689152
+  STD     0     0     0     0     0     0     0     0    -1     0     3     1     0     0     0     0     0   2048 691200
+  STD     0     0     0     0     0     0     0     0    -2     0     0     1     0     0     0     0     0   2048 693248
+  STD     0     0     0     0     0     0     0     0    -2     0     1     1     0     0     0     0     0   2048 695296
+  STD     0     0     0     0     0     0     0     0    -2     0     2     1     0     0     0     0     0   2048 697344
+  STD     0     0     0     0     0     0     0     0    -2     0     3     1     0     0     0     0     0   2048 699392
+  STD     0     0     0     0     0     0     0     0    -3     0     0     1     0     0     0     0     0   2048 701440
+  STD     0     0     0     0     0     0     0     0    -3     0     1     1     0     0     0     0     0   2048 703488
+  STD     0     0     0     0     0     0     0     0    -3     0     2     1     0     0     0     0     0   2048 705536
+  STD     0     0     0     0     0     0     0     0    -3     0     3     1     0     0     0     0     0   2048 707584
+  STD     0     0     0     0     0     0     0     0    -4     0     0     1     0     0     0     0     0   2048 709632
+  STD     0     0     0     0     0     0     0     0    -4     0     1     1     0     0     0     0     0   2048 711680
+  STD     0     0     0     0     0     0     0     0    -4     0     2     1     0     0     0     0     0   2048 713728
+  STD     0     0     0     0     0     0     0     0    -4     0     3     1     0     0     0     0     0   2048 715776
+  STD     0     0     0     0     0     0     0     0    -5     0     0     1     0     0     0     0     0   2048 717824
+  STD     0     0     0     0     0     0     0     0    -5     0     1     1     0     0     0     0     0   2048 719872
+  STD     0     0     0     0     0     0     0     0    -5     0     2     1     0     0     0     0     0   2048 721920
+  STD     0     0     0     0     0     0     0     0    -5     0     3     1     0     0     0     0     0   2048 723968
+  STD     0     0     0     0     0     0     0     0    -6     0     0     1     0     0     0     0     0   2048 726016
+  STD     0     0     0     0     0     0     0     0    -6     0     1     1     0     0     0     0     0   2048 728064
+  STD     0     0     0     0     0     0     0     0    -6     0     2     1     0     0     0     0     0   2048 730112
+  STD     0     0     0     0     0     0     0     0    -6     0     3     1     0     0     0     0     0   2048 732160
+  STD     0     0     0     0     0     0     0     0    -7     0     0     1     0     0     0     0     0   2048 734208
+  STD     0     0     0     0     0     0     0     0    -7     0     1     1     0     0     0     0     0   2048 736256
+  STD     0     0     0     0     0     0     0     0    -7     0     2     1     0     0     0     0     0   2048 738304
+  STD     0     0     0     0     0     0     0     0    -7     0     3     1     0     0     0     0     0   2048 740352
+  STD     0     0     0     0     0     0     0     0    -8     0     0     1     0     0     0     0     0   2048 742400
+  STD     0     0     0     0     0     0     0     0    -8     0     1     1     0     0     0     0     0   2048 744448
+  STD     0     0     0     0     0     0     0     0    -8     0     2     1     0     0     0     0     0   2048 746496
+  STD     0     0     0     0     0     0     0     0    -8     0     3     1     0     0     0     0     0   2048 748544
+  STD     0     0     0     0     0     0     0     0    -9     0     0     1     0     0     0     0     0   2048 750592
+  STD     0     0     0     0     0     0     0     0    -9     0     1     1     0     0     0     0     0   2048 752640
+  STD     0     0     0     0     0     0     0     0    -9     0     2     1     0     0     0     0     0   2048 754688
+  STD     0     0     0     0     0     0     0     0    -9     0     3     1     0     0     0     0     0   2048 756736
+  STD     0     0     0     0     0     0     0     0   -10     0     0     1     0     0     0     0     0   2048 758784
+  STD     0     0     0     0     0     0     0     0   -10     0     1     1     0     0     0     0     0   2048 760832
+  STD     0     0     0     0     0     0     0     0   -10     0     2     1     0     0     0     0     0   2048 762880
+  STD     0     0     0     0     0     0     0     0   -10     0     3     1     0     0     0     0     0   2048 764928
+  STD     0     0     0     0     0     0     0     0   -11     0     0     1     0     0     0     0     0   2048 766976
+  STD     0     0     0     0     0     0     0     0   -11     0     1     1     0     0     0     0     0   2048 769024
+  STD     0     0     0     0     0     0     0     0   -11     0     2     1     0     0     0     0     0   2048 771072
+  STD     0     0     0     0     0     0     0     0   -11     0     3     1     0     0     0     0     0   2048 773120
+  STD     0     0     0     0     0     0     0     0   -12     0     0     1     0     0     0     0     0   2048 775168
+  STD     0     0     0     0     0     0     0     0   -12     0     1     1     0     0     0     0     0   2048 777216
+  STD     0     0     0     0     0     0     0     0   -12     0     2     1     0     0     0     0     0   2048 779264
+  STD     0     0     0     0     0     0     0     0   -12     0     3     1     0     0     0     0     0   2048 781312
+  STD     0     0     0     0     0     0     0     0   -13     0     0     1     0     0     0     0     0   2048 783360
+  STD     0     0     0     0     0     0     0     0   -13     0     1     1     0     0     0     0     0   2048 785408
+  STD     0     0     0     0     0     0     0     0   -13     0     2     1     0     0     0     0     0   2048 787456
+  STD     0     0     0     0     0     0     0     0   -13     0     3     1     0     0     0     0     0   2048 789504
+  STD     0     0     0     0     0     0     0     0   -14     0     0     1     0     0     0     0     0   2048 791552
+  STD     0     0     0     0     0     0     0     0   -14     0     1     1     0     0     0     0     0   2048 793600
+  STD     0     0     0     0     0     0     0     0   -14     0     2     1     0     0     0     0     0   2048 795648
+  STD     0     0     0     0     0     0     0     0   -14     0     3     1     0     0     0     0     0   2048 797696
+  STD     0     0     0     0     0     0     0     0   -15     0     0     1     0     0     0     0     0   2048 799744
+  STD     0     0     0     0     0     0     0     0   -15     0     1     1     0     0     0     0     0   2048 801792
+  STD     0     0     0     0     0     0     0     0   -15     0     2     1     0     0     0     0     0   2048 803840
+  STD     0     0     0     0     0     0     0     0   -15     0     3     1     0     0     0     0     0   2048 805888
+  STD     0     0     0     0     0     0     0     0   -16     0     0     1     0     0     0     0     0   2048 807936
+  STD     0     0     0     0     0     0     0     0   -16     0     1     1     0     0     0     0     0   2048 809984
+  STD     0     0     0     0     0     0     0     0   -16     0     2     1     0     0     0     0     0   2048 812032
+  STD     0     0     0     0     0     0     0     0   -16     0     3     1     0     0     0     0     0   2048 814080
+  STD     0     0     0     0     0     0     0     0   -17     0     0     1     0     0     0     0     0   2048 816128
+  STD     0     0     0     0     0     0     0     0   -17     0     1     1     0     0     0     0     0   2048 818176
+  STD     0     0     0     0     0     0     0     0   -17     0     2     1     0     0     0     0     0   2048 820224
+  STD     0     0     0     0     0     0     0     0   -17     0     3     1     0     0     0     0     0   2048 822272
+  STD     0     0     0     0     0     0     0     0   -18     0     0     1     0     0     0     0     0   2048 824320
+  STD     0     0     0     0     0     0     0     0   -18     0     1     1     0     0     0     0     0   2048 826368
+  STD     0     0     0     0     0     0     0     0   -18     0     2     1     0     0     0     0     0   2048 828416
+  STD     0     0     0     0     0     0     0     0   -18     0     3     1     0     0     0     0     0   2048 830464
+  STD     0     0     0     0     0     0     0     0   -19     0     0     1     0     0     0     0     0   2048 832512
+  STD     0     0     0     0     0     0     0     0   -19     0     1     1     0     0     0     0     0   2048 834560
+  STD     0     0     0     0     0     0     0     0   -19     0     2     1     0     0     0     0     0   2048 836608
+  STD     0     0     0     0     0     0     0     0   -19     0     3     1     0     0     0     0     0   2048 838656
+  STD     0     0     0     0     0     0     0     0   -20     0     0     1     0     0     0     0     0   2048 840704
+  STD     0     0     0     0     0     0     0     0   -20     0     1     1     0     0     0     0     0   2048 842752
+  STD     0     0     0     0     0     0     0     0   -20     0     2     1     0     0     0     0     0   2048 844800
+  STD     0     0     0     0     0     0     0     0   -20     0     3     1     0     0     0     0     0   2048 846848
+  STD     0     0     0     0     0     0     0     0   -21     0     0     1     0     0     0     0     0   2048 848896
+  STD     0     0     0     0     0     0     0     0   -21     0     1     1     0     0     0     0     0   2048 850944
+  STD     0     0     0     0     0     0     0     0   -21     0     2     1     0     0     0     0     0   2048 852992
+  STD     0     0     0     0     0     0     0     0   -21     0     3     1     0     0     0     0     0   2048 855040
+  STD     0     0     0     0     0     0     0     0   -22     0     0     1     0     0     0     0     0   2048 857088
+  STD     0     0     0     0     0     0     0     0   -22     0     1     1     0     0     0     0     0   2048 859136
+  STD     0     0     0     0     0     0     0     0   -22     0     2     1     0     0     0     0     0   2048 861184
+  STD     0     0     0     0     0     0     0     0   -22     0     3     1     0     0     0     0     0   2048 863232
+  STD     0     0     0     0     0     0     0     0   -23     0     0     1     0     0     0     0     0   2048 865280
+  STD     0     0     0     0     0     0     0     0   -23     0     1     1     0     0     0     0     0   2048 867328
+  STD     0     0     0     0     0     0     0     0   -23     0     2     1     0     0     0     0     0   2048 869376
+  STD     0     0     0     0     0     0     0     0   -23     0     3     1     0     0     0     0     0   2048 871424
+  STD     0     0     0     0     0     0     0     0   -24     0     0     1     0     0     0     0     0   2048 873472
+  STD     0     0     0     0     0     0     0     0   -24     0     1     1     0     0     0     0     0   2048 875520
+  STD     0     0     0     0     0     0     0     0   -24     0     2     1     0     0     0     0     0   2048 877568
+  STD     0     0     0     0     0     0     0     0   -24     0     3     1     0     0     0     0     0   2048 879616
+  STD     0     0     0     0     0     0     0     0   -25     0     0     1     0     0     0     0     0   2048 881664
+  STD     0     0     0     0     0     0     0     0   -25     0     1     1     0     0     0     0     0   2048 883712
+  STD     0     0     0     0     0     0     0     0   -25     0     2     1     0     0     0     0     0   2048 885760
+  STD     0     0     0     0     0     0     0     0   -25     0     3     1     0     0     0     0     0   2048 887808
+  STD     0     0     0     0     0     0     0     0   -26     0     0     1     0     0     0     0     0   2048 889856
+  STD     0     0     0     0     0     0     0     0   -26     0     1     1     0     0     0     0     0   2048 891904
+  STD     0     0     0     0     0     0     0     0   -26     0     2     1     0     0     0     0     0   2048 893952
+  STD     0     0     0     0     0     0     0     0   -26     0     3     1     0     0     0     0     0   2048 896000
+  STD     0     0     0     0     0     0     0     0   -27     0     0     1     0     0     0     0     0   2048 898048
+  STD     0     0     0     0     0     0     0     0   -27     0     1     1     0     0     0     0     0   2048 900096
+  STD     0     0     0     0     0     0     0     0   -27     0     2     1     0     0     0     0     0   2048 902144
+  STD     0     0     0     0     0     0     0     0   -27     0     3     1     0     0     0     0     0   2048 904192
+  STD     0     0     0     0     0     0     0     0   -28     0     0     1     0     0     0     0     0   2048 906240
+  STD     0     0     0     0     0     0     0     0   -28     0     1     1     0     0     0     0     0   2048 908288
+  STD     0     0     0     0     0     0     0     0   -28     0     2     1     0     0     0     0     0   2048 910336
+  STD     0     0     0     0     0     0     0     0   -28     0     3     1     0     0     0     0     0   2048 912384
+  STD     0     0     0     0     0     0     0     0   -29     0     0     1     0     0     0     0     0   2048 914432
+  STD     0     0     0     0     0     0     0     0   -29     0     1     1     0     0     0     0     0   2048 916480
+  STD     0     0     0     0     0     0     0     0   -29     0     2     1     0     0     0     0     0   2048 918528
+  STD     0     0     0     0     0     0     0     0   -29     0     3     1     0     0     0     0     0   2048 920576
+  STD     0     0     0     0     0     0     0     0   -30     0     0     1     0     0     0     0     0   2048 922624
+  STD     0     0     0     0     0     0     0     0   -30     0     1     1     0     0     0     0     0   2048 924672
+  STD     0     0     0     0     0     0     0     0   -30     0     2     1     0     0     0     0     0   2048 926720
+  STD     0     0     0     0     0     0     0     0   -30     0     3     1     0     0     0     0     0   2048 928768
+  STD     0     0     0     0     0     0     0     0   -31     0     0     1     0     0     0     0     0   2048 930816
+  STD     0     0     0     0     0     0     0     0   -31     0     1     1     0     0     0     0     0   2048 932864
+  STD     0     0     0     0     0     0     0     0   -31     0     2     1     0     0     0     0     0   2048 934912
+  STD     0     0     0     0     0     0     0     0   -31     0     3     1     0     0     0     0     0   2048 936960
+  STD     0     0     0     0     0     0     0     0   -32     0     0     1     0     0     0     0     0   2048 939008
+  STD     0     0     0     0     0     0     0     0   -32     0     1     1     0     0     0     0     0   2048 941056
+  STD     0     0     0     0     0     0     0     0   -32     0     2     1     0     0     0     0     0   2048 943104
+  STD     0     0     0     0     0     0     0     0   -32     0     3     1     0     0     0     0     0   2048 945152
+  STD     0     0     0     0     0     0     0     0   -33     0     0     1     0     0     0     0     0   2048 947200
+  STD     0     0     0     0     0     0     0     0   -33     0     1     1     0     0     0     0     0   2048 949248
+  STD     0     0     0     0     0     0     0     0   -33     0     2     1     0     0     0     0     0   2048 951296
+  STD     0     0     0     0     0     0     0     0   -33     0     3     1     0     0     0     0     0   2048 953344
+  STD     0     0     0     0     0     0     0     0   -34     0     0     1     0     0     0     0     0   2048 955392
+  STD     0     0     0     0     0     0     0     0   -34     0     1     1     0     0     0     0     0   2048 957440
+  STD     0     0     0     0     0     0     0     0   -34     0     2     1     0     0     0     0     0   2048 959488
+  STD     0     0     0     0     0     0     0     0   -34     0     3     1     0     0     0     0     0   2048 961536
+  STD     0     0     0     0     0     0     0     0   -35     0     0     1     0     0     0     0     0   2048 963584
+  STD     0     0     0     0     0     0     0     0   -35     0     1     1     0     0     0     0     0   2048 965632
+  STD     0     0     0     0     0     0     0     0   -35     0     2     1     0     0     0     0     0   2048 967680
+  STD     0     0     0     0     0     0     0     0   -35     0     3     1     0     0     0     0     0   2048 969728
+  STD     0     0     0     0     0     0     0     0   -36     0     0     1     0     0     0     0     0   2048 971776
+  STD     0     0     0     0     0     0     0     0   -36     0     1     1     0     0     0     0     0   2048 973824
+  STD     0     0     0     0     0     0     0     0   -36     0     2     1     0     0     0     0     0   2048 975872
+  STD     0     0     0     0     0     0     0     0   -36     0     3     1     0     0     0     0     0   2048 977920
+  STD     0     0     0     0     0     0     0     0   -37     0     0     1     0     0     0     0     0   2048 979968
+  STD     0     0     0     0     0     0     0     0   -37     0     1     1     0     0     0     0     0   2048 982016
+  STD     0     0     0     0     0     0     0     0   -37     0     2     1     0     0     0     0     0   2048 984064
+  STD     0     0     0     0     0     0     0     0   -37     0     3     1     0     0     0     0     0   2048 986112
+  STD     0     0     0     0     0     0     0     0   -38     0     0     1     0     0     0     0     0   2048 988160
+  STD     0     0     0     0     0     0     0     0   -38     0     1     1     0     0     0     0     0   2048 990208
+  STD     0     0     0     0     0     0     0     0   -38     0     2     1     0     0     0     0     0   2048 992256
+  STD     0     0     0     0     0     0     0     0   -38     0     3     1     0     0     0     0     0   2048 994304
+  STD     0     0     0     0     0     0     0     0   -39     0     0     1     0     0     0     0     0   2048 996352
+  STD     0     0     0     0     0     0     0     0   -39     0     1     1     0     0     0     0     0   2048 998400
+  STD     0     0     0     0     0     0     0     0   -39     0     2     1     0     0     0     0     0   2048 1000448
+  STD     0     0     0     0     0     0     0     0   -39     0     3     1     0     0     0     0     0   2048 1002496
+  STD     0     0     0     0     0     0     0     0   -40     0     0     1     0     0     0     0     0   2048 1004544
+  STD     0     0     0     0     0     0     0     0   -40     0     1     1     0     0     0     0     0   2048 1006592
+  STD     0     0     0     0     0     0     0     0   -40     0     2     1     0     0     0     0     0   2048 1008640
+  STD     0     0     0     0     0     0     0     0   -40     0     3     1     0     0     0     0     0   2048 1010688
+  STD     0     0     0     0     0     0     0     0   -41     0     0     1     0     0     0     0     0   2048 1012736
+  STD     0     0     0     0     0     0     0     0   -41     0     1     1     0     0     0     0     0   2048 1014784
+  STD     0     0     0     0     0     0     0     0   -41     0     2     1     0     0     0     0     0   2048 1016832
+  STD     0     0     0     0     0     0     0     0   -41     0     3     1     0     0     0     0     0   2048 1018880
+  STD     0     0     0     0     0     0     0     0   -42     0     0     1     0     0     0     0     0   2048 1020928
+  STD     0     0     0     0     0     0     0     0   -42     0     1     1     0     0     0     0     0   2048 1022976
+  STD     0     0     0     0     0     0     0     0   -42     0     2     1     0     0     0     0     0   2048 1025024
+  STD     0     0     0     0     0     0     0     0   -42     0     3     1     0     0     0     0     0   2048 1027072
+  STD     0     0     0     0     0     0     0     0   -43     0     0     1     0     0     0     0     0   2048 1029120
+  STD     0     0     0     0     0     0     0     0   -43     0     1     1     0     0     0     0     0   2048 1031168
+  STD     0     0     0     0     0     0     0     0   -43     0     2     1     0     0     0     0     0   2048 1033216
+  STD     0     0     0     0     0     0     0     0   -43     0     3     1     0     0     0     0     0   2048 1035264
+  STD     0     0     0     0     0     0     0     0   -44     0     0     1     0     0     0     0     0   2048 1037312
+  STD     0     0     0     0     0     0     0     0   -44     0     1     1     0     0     0     0     0   2048 1039360
+  STD     0     0     0     0     0     0     0     0   -44     0     2     1     0     0     0     0     0   2048 1041408
+  STD     0     0     0     0     0     0     0     0   -44     0     3     1     0     0     0     0     0   2048 1043456
+  STD     0     0     0     0     0     0     0     0   -45     0     0     1     0     0     0     0     0   2048 1045504
+  STD     0     0     0     0     0     0     0     0   -45     0     1     1     0     0     0     0     0   2048 1047552
+  STD     0     0     0     0     0     0     0     0   -45     0     2     1     0     0     0     0     0   2048 1049600
+  STD     0     0     0     0     0     0     0     0   -45     0     3     1     0     0     0     0     0   2048 1051648
+  STD     0     0     0     0     0     0     0     0   -46     0     0     1     0     0     0     0     0   2048 1053696
+  STD     0     0     0     0     0     0     0     0   -46     0     1     1     0     0     0     0     0   2048 1055744
+  STD     0     0     0     0     0     0     0     0   -46     0     2     1     0     0     0     0     0   2048 1057792
+  STD     0     0     0     0     0     0     0     0   -46     0     3     1     0     0     0     0     0   2048 1059840
+  STD     0     0     0     0     0     0     0     0   -47     0     0     1     0     0     0     0     0   2048 1061888
+  STD     0     0     0     0     0     0     0     0   -47     0     1     1     0     0     0     0     0   2048 1063936
+  STD     0     0     0     0     0     0     0     0   -47     0     2     1     0     0     0     0     0   2048 1065984
+  STD     0     0     0     0     0     0     0     0   -47     0     3     1     0     0     0     0     0   2048 1068032
+  STD     0     0     0     0     0     0     0     0   -48     0     0     1     0     0     0     0     0   2048 1070080
+  STD     0     0     0     0     0     0     0     0   -48     0     1     1     0     0     0     0     0   2048 1072128
+  STD     0     0     0     0     0     0     0     0   -48     0     2     1     0     0     0     0     0   2048 1074176
+  STD     0     0     0     0     0     0     0     0   -48     0     3     1     0     0     0     0     0   2048 1076224
+  STD     0     0     0     0     0     0     0     0   -49     0     0     1     0     0     0     0     0   2048 1078272
+  STD     0     0     0     0     0     0     0     0   -49     0     1     1     0     0     0     0     0   2048 1080320
+  STD     0     0     0     0     0     0     0     0   -49     0     2     1     0     0     0     0     0   2048 1082368
+  STD     0     0     0     0     0     0     0     0   -49     0     3     1     0     0     0     0     0   2048 1084416
+  STD     0     0     0     0     0     0     0     0   -50     0     0     1     0     0     0     0     0   2048 1086464
+  STD     0     0     0     0     0     0     0     0   -50     0     1     1     0     0     0     0     0   2048 1088512
+  STD     0     0     0     0     0     0     0     0   -50     0     2     1     0     0     0     0     0   2048 1090560
+  STD     0     0     0     0     0     0     0     0   -50     0     3     1     0     0     0     0     0   2048 1092608
+  STD     0     0     0     0     0     0     0     0   -51     0     0     1     0     0     0     0     0   2048 1094656
+  STD     0     0     0     0     0     0     0     0   -51     0     1     1     0     0     0     0     0   2048 1096704
+  STD     0     0     0     0     0     0     0     0   -51     0     2     1     0     0     0     0     0   2048 1098752
+  STD     0     0     0     0     0     0     0     0   -51     0     3     1     0     0     0     0     0   2048 1100800
+  STD     0     0     0     0     0     0     0     0   -52     0     0     1     0     0     0     0     0   2048 1102848
+  STD     0     0     0     0     0     0     0     0   -52     0     1     1     0     0     0     0     0   2048 1104896
+  STD     0     0     0     0     0     0     0     0   -52     0     2     1     0     0     0     0     0   2048 1106944
+  STD     0     0     0     0     0     0     0     0   -52     0     3     1     0     0     0     0     0   2048 1108992
+  STD     0     0     0     0     0     0     0     0   -53     0     0     1     0     0     0     0     0   2048 1111040
+  STD     0     0     0     0     0     0     0     0   -53     0     1     1     0     0     0     0     0   2048 1113088
+  STD     0     0     0     0     0     0     0     0   -53     0     2     1     0     0     0     0     0   2048 1115136
+  STD     0     0     0     0     0     0     0     0   -53     0     3     1     0     0     0     0     0   2048 1117184
+  STD     0     0     0     0     0     0     0     0   -54     0     0     1     0     0     0     0     0   2048 1119232
+  STD     0     0     0     0     0     0     0     0   -54     0     1     1     0     0     0     0     0   2048 1121280
+  STD     0     0     0     0     0     0     0     0   -54     0     2     1     0     0     0     0     0   2048 1123328
+  STD     0     0     0     0     0     0     0     0   -54     0     3     1     0     0     0     0     0   2048 1125376
+  STD     0     0     0     0     0     0     0     0   -55     0     0     1     0     0     0     0     0   2048 1127424
+  STD     0     0     0     0     0     0     0     0   -55     0     1     1     0     0     0     0     0   2048 1129472
+  STD     0     0     0     0     0     0     0     0   -55     0     2     1     0     0     0     0     0   2048 1131520
+  STD     0     0     0     0     0     0     0     0   -55     0     3     1     0     0     0     0     0   2048 1133568
+  STD     0     0     0     0     0     0     0     0   -56     0     0     1     0     0     0     0     0   2048 1135616
+  STD     0     0     0     0     0     0     0     0   -56     0     1     1     0     0     0     0     0   2048 1137664
+  STD     0     0     0     0     0     0     0     0   -56     0     2     1     0     0     0     0     0   2048 1139712
+  STD     0     0     0     0     0     0     0     0   -56     0     3     1     0     0     0     0     0   2048 1141760
+  STD     0     0     0     0     0     0     0     0   -57     0     0     1     0     0     0     0     0   2048 1143808
+  STD     0     0     0     0     0     0     0     0   -57     0     1     1     0     0     0     0     0   2048 1145856
+  STD     0     0     0     0     0     0     0     0   -57     0     2     1     0     0     0     0     0   2048 1147904
+  STD     0     0     0     0     0     0     0     0   -57     0     3     1     0     0     0     0     0   2048 1149952
+  STD     0     0     0     0     0     0     0     0   -58     0     0     1     0     0     0     0     0   2048 1152000
+  STD     0     0     0     0     0     0     0     0   -58     0     1     1     0     0     0     0     0   2048 1154048
+  STD     0     0     0     0     0     0     0     0   -58     0     2     1     0     0     0     0     0   2048 1156096
+  STD     0     0     0     0     0     0     0     0   -58     0     3     1     0     0     0     0     0   2048 1158144
+  STD     0     0     0     0     0     0     0     0   -59     0     0     1     0     0     0     0     0   2048 1160192
+  STD     0     0     0     0     0     0     0     0   -59     0     1     1     0     0     0     0     0   2048 1162240
+  STD     0     0     0     0     0     0     0     0   -59     0     2     1     0     0     0     0     0   2048 1164288
+  STD     0     0     0     0     0     0     0     0   -59     0     3     1     0     0     0     0     0   2048 1166336
+  STD     0     0     0     0     0     0     0     0   -60     0     0     1     0     0     0     0     0   2048 1168384
+  STD     0     0     0     0     0     0     0     0   -60     0     1     1     0     0     0     0     0   2048 1170432
+  STD     0     0     0     0     0     0     0     0   -60     0     2     1     0     0     0     0     0   2048 1172480
+  STD     0     0     0     0     0     0     0     0   -60     0     3     1     0     0     0     0     0   2048 1174528
+  STD     0     0     0     0     0     0     0     0   -61     0     0     1     0     0     0     0     0   2048 1176576
+  STD     0     0     0     0     0     0     0     0   -61     0     1     1     0     0     0     0     0   2048 1178624
+  STD     0     0     0     0     0     0     0     0   -61     0     2     1     0     0     0     0     0   2048 1180672
+  STD     0     0     0     0     0     0     0     0   -61     0     3     1     0     0     0     0     0   2048 1182720
+  STD     0     0     0     0     0     0     0     0   -62     0     0     1     0     0     0     0     0   2048 1184768
+  STD     0     0     0     0     0     0     0     0   -62     0     1     1     0     0     0     0     0   2048 1186816
+  STD     0     0     0     0     0     0     0     0   -62     0     2     1     0     0     0     0     0   2048 1188864
+  STD     0     0     0     0     0     0     0     0   -62     0     3     1     0     0     0     0     0   2048 1190912
+  STD     0     0     0     0     0     0     0     0   -63     0     0     1     0     0     0     0     0   2048 1192960
+  STD     0     0     0     0     0     0     0     0   -63     0     1     1     0     0     0     0     0   2048 1195008
+  STD     0     0     0     0     0     0     0     0   -63     0     2     1     0     0     0     0     0   2048 1197056
+  STD     0     0     0     0     0     0     0     0   -63     0     3     1     0     0     0     0     0   2048 1199104
+  STD     0     0     0     0     0     0     0     0   -64     0     0     1     0     0     0     0     0   2048 1201152
+  STD     0     0     0     0     0     0     0     0   -64     0     1     1     0     0     0     0     0   2048 1203200
+  STD     0     0     0     0     0     0     0     0   -64     0     2     1     0     0     0     0     0   2048 1205248
+  STD     0     0     0     0     0     0     0     0   -64     0     3     1     0     0     0     0     0   2048 1207296
+#
+# === END OF DATA VECTOR INDEX ===================================================
+#
+# mix  echo loca  linear phase errors                  value
+# ---- ---- ----  ----------------------------------   ---------
+.    0    0    0  0th_order_phase_error_X            :   -1.7593
+.    0    0    0  1st_order_phase_error_X            :   -0.0080
+#
+# === END OF DATA DESCRIPTION FILE ===============================================
