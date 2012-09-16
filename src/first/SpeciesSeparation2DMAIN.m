@@ -96,6 +96,10 @@
 disp('Chemical Species Separation using k-space formulation');
 disp('2D Version - JLH, Jun 2011');
 
+path(path, '../general');
+path(path, '../ideal');
+path(path, '../data');
+
 global kx ky kf Mspecies Nx Ny M frequency_offset x_positions y_positions gammabar n_doneiters
 
 %%%% General Parameters %%%%
@@ -123,8 +127,8 @@ GradOniterJ = 780;
 % if range = [1 256], the algorithm will be applied to the 
 % lines from 1 to 256
 %%%%
-range = [63 66];
-row_range = [63:66];
+range = [1 128];
+row_range = [1:128];
 col_range = [1:128];
 %%%%
 
@@ -134,12 +138,12 @@ UseParallel = 0; Npools = 4;
 
 % If set to 1, the output from the iterations is printed, along with
 % warnings and others. If set to 0, warnings are deactivated.
-HighConsoleOutput = 0;
+HighConsoleOutput = 1;
 % If parallel computation is used, HighConsoleOutput is set to false.
 HighConsoleOutput = logical(HighConsoleOutput*(~UseParallel));
 
 % Plots images and 1D objects for each iteration
-WithGraphics = 0;
+WithGraphics = 1;
 
 % If set to 1, pauses before entering the main optimization loop.
 PauseBeforeOptim = 0;
@@ -169,7 +173,7 @@ CalculateB0fromAcq = true; AcqForB0 = [3 2];
 IncludeSimulation = 1; %%% !!
 
 % Adds AWGN to the input data;
-WithNoise = 1;
+WithNoise = 0;
 NoiseSNR = 10;
 
 % If no high console output, warnings are turned off.
@@ -257,12 +261,8 @@ if(IncludeSimulation) % If IncludeSimulation == 0, then the input data is
     % not available, any string will do. Finally, raw_000 is the raw data
     % for this acquisition. 
     %
-    %AcqDirec = 'D:\Dropbox\MR\Pruebas Resonador\Phantom 11-01-17';
-    %AcqDirec = 'D:\Dropbox\MR\Pruebas Resonador\Phantom 11-03-01';
-    AcqDirec = 'D:\Dropbox\MR\Pruebas Resonador\Phantom 11-03-10'; disp('Bottle Phantom');
-    %AcqDirec = 'D:\Dropbox\MR\Pruebas Resonador\InVivo 11-04-04';
-    %AcqDirec = 'D:\Dropbox\MR\Pruebas Resonador\InVivo 11-04-11';
-    %AcqDirec = 'D:\Dropbox\MR\Pruebas Resonador\InVivo 11-04-13';
+    %AcqDirec = '../../data/set1'; disp('InVivo Brain');
+    AcqDirec = '../../data/set2'; disp('Bottle Phantom');
     %AcqDirec = 'D:\Dropbox\MR\Pruebas Resonador\InVivo 11-04-19-1'; disp('Thigh Acquisition');
     %AcqDirec = 'D:\Dropbox\MR\Pruebas Resonador\InVivo 11-04-19-2'; disp('Brain Acquisition');
     RequestedTEs = TE;
@@ -301,8 +301,6 @@ if(IncludeSimulation) % If IncludeSimulation == 0, then the input data is
         kx(ii,:) = AcqStructs(ii).KTraj.kx;
         ky(ii,:) = AcqStructs(ii).KTraj.ky;
         kf(ii,:) = AcqStructs(ii).KTraj.kf;
-        %kf(ii,:) = AcqStructs(ii).TE*1e-3; % s
-        %TE(ii) = AcqStructs(ii).TE*1e-3; % s
         % The echo time is the middle of kf
         TE(ii) = AcqStructs(ii).KTraj.kf(Nx/2+1);
         % Fourier transform of the raw data
@@ -344,8 +342,6 @@ field_inhomogeneity(field_inhomogeneity<-110) = field_inhomogeneity(field_inhomo
 field_inhomogeneity = imfilter(field_inhomogeneity, fspecial('gaussian', [3 3], 2));
 
 if(WithGraphics)
-%    Plot2DObject(m_fft_estimate, field_inhomogeneity, 'i2DFT', 'Acquisition');
-%    pause
     Plot2DObject(m_fft_estimate, field_inhomogeneity, 'i2DFT-estim', 'Acquisition');
     m_fft2 = zeros(size(m_fft_estimate));
     for ii = 1:Nacq
@@ -356,7 +352,7 @@ end
 
 %%%%%%%%%%%%% R2* Fitting from Acq %%%%%%%%%%%
 try
-    R2_fitted;
+    R2_fitted; % check if there's one in workspace
 catch
     fprintf('Calculating R2* from exponential fit\n');
     tic
